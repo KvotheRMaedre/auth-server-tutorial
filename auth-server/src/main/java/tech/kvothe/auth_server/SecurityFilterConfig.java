@@ -4,42 +4,41 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+@SuppressWarnings("ALL")
 @Configuration
 public class SecurityFilterConfig {
 
     @Bean
     @Order(1)
-    SecurityFilterChain authServerSecurityChain (HttpSecurity httpSecurity) throws Exception {
+    SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                OAuth2AuthorizationServerConfigurer.authorizationServer().oidc(withDefaults());
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class).oidc(withDefaults());
 
-        httpSecurity
-                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                .exceptionHandling((exceptions) -> exceptions
+        http.exceptionHandling((exceptions) -> exceptions
                         .authenticationEntryPoint(
-                                new LoginUrlAuthenticationEntryPoint("/login")
-                        ))
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(withDefaults()))
-                .with(authorizationServerConfigurer, withDefaults());
+                                new LoginUrlAuthenticationEntryPoint("/login")))
+                .oauth2ResourceServer(conf -> conf.jwt(withDefaults()));
 
-        return httpSecurity.build();
+        return http.build();
     }
 
     @Bean
     @Order(2)
-    SecurityFilterChain defaultServerSecurityChain (HttpSecurity httpSecurity) throws Exception {
-
-        httpSecurity
-                .authorizeHttpRequests((authorize) -> authorize.anyRequest().authenticated())
+    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
+            throws Exception {
+        http
+                .authorizeHttpRequests((authorize) -> authorize
+                        .anyRequest().authenticated())
                 .formLogin(withDefaults());
 
-        return httpSecurity.build();
+        return http.build();
     }
 }

@@ -11,21 +11,23 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-@SuppressWarnings("ALL")
 @Configuration
 public class SecurityFilterConfig {
 
     @Bean
     @Order(1)
     SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class).oidc(withDefaults());
 
-        http.exceptionHandling((exceptions) -> exceptions
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
+                OAuth2AuthorizationServerConfigurer.authorizationServer().oidc(withDefaults());
+        http
+                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
+                .with(authorizationServerConfigurer, withDefaults())
+                .authorizeHttpRequests((authorize) -> authorize.anyRequest().authenticated())
+                .exceptionHandling((exceptions) -> exceptions
                         .authenticationEntryPoint(
-                                new LoginUrlAuthenticationEntryPoint("/login")))
-                .oauth2ResourceServer(conf -> conf.jwt(withDefaults()));
+                                new LoginUrlAuthenticationEntryPoint("/login")));
 
         return http.build();
     }

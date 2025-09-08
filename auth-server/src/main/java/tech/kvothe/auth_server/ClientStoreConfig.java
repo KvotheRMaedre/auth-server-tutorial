@@ -32,6 +32,7 @@ public class ClientStoreConfig {
                         .requireAuthorizationConsent(true)
                         .build())
                 .build();
+
         return new InMemoryRegisteredClientRepository(registeredClient);
     }
 }

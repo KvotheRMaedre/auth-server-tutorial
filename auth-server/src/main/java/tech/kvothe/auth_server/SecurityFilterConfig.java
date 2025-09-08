@@ -21,6 +21,7 @@ public class SecurityFilterConfig {
                 OAuth2AuthorizationServerConfigurer.authorizationServer().oidc(withDefaults());
 
         httpSecurity
+                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .exceptionHandling((exceptions) -> exceptions
                         .authenticationEntryPoint(
                                 new LoginUrlAuthenticationEntryPoint("/login")

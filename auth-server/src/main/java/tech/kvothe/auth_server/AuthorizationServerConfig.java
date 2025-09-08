@@ -9,6 +9,6 @@ public class AuthorizationServerConfig {
 
     @Bean
     AuthorizationServerSettings authorizationServerSettings() {
-        return  AuthorizationServerSettings.builder().build();
+        return AuthorizationServerSettings.builder().build();
     }
 }
